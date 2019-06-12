@@ -113,12 +113,6 @@ public class MainActivity extends AppCompatActivity {
                     data = reader.read();
                 }
                 Log.i("result: ",result);
-//                JSONArray jsonArray = new JSONArray(result);
-//                int numberOfItems = 20;
-//                if(jsonArray.length() < 20) {
-//                    numberOfItems = jsonArray.length();
-//                }
-//                Log.i("length", (Integer.toString(numberOfItems)));
                 articleDB.execSQL("DELETE FROM articles ");
 
                 JSONObject jsonObject = new JSONObject(result);
@@ -157,7 +151,6 @@ public class MainActivity extends AppCompatActivity {
                     statement.bindString(3, description);
                 }
 
-                //Log.i("result:", result);
                 return result;
             } catch (MalformedURLException e) {
                 e.printStackTrace();
