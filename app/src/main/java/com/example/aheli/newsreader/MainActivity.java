@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -33,13 +34,16 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
+    ArrayList<String> titles = new ArrayList<>();
+    ArrayList<String> content = new ArrayList<>();
+
+    ArrayAdapter arrayAdapter;
+
     SQLiteDatabase articleDB;
+
     String apiKey = BuildConfig.ApiKey;
 
     ListView listview;
-    final ArrayList<String> titles = new ArrayList<String>();
-    final ArrayList<String> content = new ArrayList<String>();
-    ArrayAdapter arrayAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         articleDB = this.openOrCreateDatabase("Articles", MODE_PRIVATE, null);
-        articleDB.execSQL("CREATE TABLE IF NOT EXISTS articles(published_at CHAR PRIMARY KEY, title VARCHAR, content VARCHAR)");
+        articleDB.execSQL("CREATE TABLE IF NOT EXISTS articles(publishedAt CHAR PRIMARY KEY,  title VARCHAR, content VARCHAR)");
         updateListView();
 
         try {
@@ -61,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
         ListView listview = findViewById(R.id.listview);
 
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, titles);//simple list item1: simple string with label.
+        arrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, titles);//simple list item1: simple string with label.
         //set array adapter to list view
         listview.setAdapter(arrayAdapter);
 
@@ -78,18 +82,22 @@ public class MainActivity extends AppCompatActivity {
 
     public void updateListView() {
         Cursor c = articleDB.rawQuery("SELECT * FROM articles", null);
+
         int contentIndex = c.getColumnIndex("content");
         int titleIndex = c.getColumnIndex("title");
 
-        if(c.moveToFirst()) {
+        if (c.moveToFirst()) {
             titles.clear();
             content.clear();
 
             do {
+
                 titles.add(c.getString(titleIndex));
                 content.add(c.getString(contentIndex));
+
             } while (c.moveToNext());
-            arrayAdapter.notifyDataSetChanged(); //update all info
+
+            arrayAdapter.notifyDataSetChanged();
         }
     }
 
@@ -112,16 +120,62 @@ public class MainActivity extends AppCompatActivity {
                     result += current;
                     data = reader.read();
                 }
+
+                JSONArray arr = new JSONArray(result);
+
+                int numberOfItems = 20;
+
+                if (arr.length() < 20) {
+                    numberOfItems = arr.length();
+                }
+
                 Log.i("result: ",result);
                 articleDB.execSQL("DELETE FROM articles ");
 
-                JSONObject jsonObject = new JSONObject(result);
-                String newsInfo = jsonObject.getString("articles");
-                Log.i("news info ", newsInfo);
-                JSONArray arr = new JSONArray(newsInfo);
-                Log.i("length of arr:", Integer.toString(arr.length()));
+//                JSONObject jsonObject = new JSONObject(result);
+//                String newsInfo = jsonObject.getString("articles");
+//                Log.i("news info ", newsInfo);
+//                JSONArray arr = new JSONArray(newsInfo);
+//                Log.i("length of arr:", Integer.toString(arr.length()));
 
                 for (int i = 0; i < arr.length(); i++) {
+
+
+//                    String articleId = jsonArray.getString(i);
+//                    url = new URL("https://hacker-news.firebaseio.com/v0/item/" + articleId + ".json?print=pretty");
+//                    urlConnection = (HttpURLConnection) url.openConnection();
+//
+//                    inputStream = urlConnection.getInputStream();
+//                    inputStreamReader = new InputStreamReader(inputStream);
+//
+//                    data = inputStreamReader.read();
+//
+//                    String articleInfo = "";
+//
+//                    while (data != -1) {
+//                        char current = (char) data;
+//                        articleInfo += current;
+//                        data = inputStreamReader.read();
+//                    }
+//
+//                    JSONObject jsonObject = new JSONObject(articleInfo);
+//
+//                    if (!jsonObject.isNull("title") && !jsonObject.isNull("url")) {
+//                        String articleTitle = jsonObject.getString("title");
+//                        String articleUrl = jsonObject.getString("url");
+//
+//                        url = new URL(articleUrl);
+//                        urlConnection = (HttpURLConnection) url.openConnection();
+//                        inputStream = urlConnection.getInputStream();
+//                        inputStreamReader = new InputStreamReader(inputStream);
+//                        data = inputStreamReader.read();
+//                        String articleContent = "";
+//                        while (data != -1) {
+//                            char current = (char) data;
+//                            articleContent += current;
+//                            data = inputStreamReader.read();
+//                        }
+
                     JSONObject jsonPart = arr.getJSONObject(i);
                     String title = "";
                     String description = "";
@@ -149,14 +203,16 @@ public class MainActivity extends AppCompatActivity {
                     statement.bindString(1, published_at);
                     statement.bindString(2, title);
                     statement.bindString(3, description);
-                }
 
+                    statement.execute();
+                }
+                Log.i("URL Content", result);
                 return result;
             } catch (MalformedURLException e) {
                 e.printStackTrace();
-            } catch (IOException e) {
+            } catch (JSONException e) {
                 e.printStackTrace();
-            } catch (Exception e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
             return null;
@@ -164,7 +220,9 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(String s) {  //called when do in background completed. passes whatever we return from doInBackground.
+
             super.onPostExecute(s);
+            updateListView();
         }
     }
 }
