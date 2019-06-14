@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     String apiKey = BuildConfig.ApiKey;
 
     ListView listview;
+    Cursor c;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +73,9 @@ public class MainActivity extends AppCompatActivity {
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long id) {
+//                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"));
+//                startActivity(browserIntent);
+
                 Intent intent  = new Intent(getApplicationContext(), ArticleActivity.class);
                 intent.putExtra("content", content.get(i));
                 startActivity(intent);
@@ -81,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void updateListView() {
-        Cursor c = articleDB.rawQuery("SELECT * FROM articles", null);
+        c = articleDB.rawQuery("SELECT * FROM articles", null);
 
         int contentIndex = c.getColumnIndex("content");
         int titleIndex = c.getColumnIndex("title");
@@ -97,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
 
             } while (c.moveToNext());
 
-            arrayAdapter.notifyDataSetChanged();
+            //arrayAdapter.notifyDataSetChanged();
         }
     }
 
@@ -121,60 +125,16 @@ public class MainActivity extends AppCompatActivity {
                     data = reader.read();
                 }
 
-                JSONArray arr = new JSONArray(result);
-
-                int numberOfItems = 20;
-
-                if (arr.length() < 20) {
-                    numberOfItems = arr.length();
-                }
-
                 Log.i("result: ",result);
                 articleDB.execSQL("DELETE FROM articles ");
 
-//                JSONObject jsonObject = new JSONObject(result);
-//                String newsInfo = jsonObject.getString("articles");
-//                Log.i("news info ", newsInfo);
-//                JSONArray arr = new JSONArray(newsInfo);
-//                Log.i("length of arr:", Integer.toString(arr.length()));
+                JSONObject jsonObject = new JSONObject(result);
+                String newsInfo = jsonObject.getString("articles");
+                Log.i("news info ", newsInfo);
+                JSONArray arr = new JSONArray(newsInfo);
+                Log.i("length of arr:", Integer.toString(arr.length()));
 
                 for (int i = 0; i < arr.length(); i++) {
-
-
-//                    String articleId = jsonArray.getString(i);
-//                    url = new URL("https://hacker-news.firebaseio.com/v0/item/" + articleId + ".json?print=pretty");
-//                    urlConnection = (HttpURLConnection) url.openConnection();
-//
-//                    inputStream = urlConnection.getInputStream();
-//                    inputStreamReader = new InputStreamReader(inputStream);
-//
-//                    data = inputStreamReader.read();
-//
-//                    String articleInfo = "";
-//
-//                    while (data != -1) {
-//                        char current = (char) data;
-//                        articleInfo += current;
-//                        data = inputStreamReader.read();
-//                    }
-//
-//                    JSONObject jsonObject = new JSONObject(articleInfo);
-//
-//                    if (!jsonObject.isNull("title") && !jsonObject.isNull("url")) {
-//                        String articleTitle = jsonObject.getString("title");
-//                        String articleUrl = jsonObject.getString("url");
-//
-//                        url = new URL(articleUrl);
-//                        urlConnection = (HttpURLConnection) url.openConnection();
-//                        inputStream = urlConnection.getInputStream();
-//                        inputStreamReader = new InputStreamReader(inputStream);
-//                        data = inputStreamReader.read();
-//                        String articleContent = "";
-//                        while (data != -1) {
-//                            char current = (char) data;
-//                            articleContent += current;
-//                            data = inputStreamReader.read();
-//                        }
 
                     JSONObject jsonPart = arr.getJSONObject(i);
                     String title = "";
