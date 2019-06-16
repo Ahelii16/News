@@ -85,24 +85,47 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void updateListView() {
-        c = articleDB.rawQuery("SELECT * FROM articles", null);
+//        c = articleDB.rawQuery("SELECT * FROM articles", null);
+//
+//        int contentIndex = c.getColumnIndex("content");
+//        int titleIndex = c.getColumnIndex("title");
+//
+//        if (c.moveToFirst()) {
+//            titles.clear();
+//            content.clear();
+//
+//            do {
+//
+//                titles.add(c.getString(titleIndex));
+//                content.add(c.getString(contentIndex));
+//
+//            } while (c.moveToNext());
+//
+//            //arrayAdapter.notifyDataSetChanged();
+//        }
 
-        int contentIndex = c.getColumnIndex("content");
-        int titleIndex = c.getColumnIndex("title");
+        SQLiteOpenHelper sqLiteOpenHelper = new SQLiteOpenHelper() {
+            @Override
+            public void onCreate(SQLiteDatabase db) {
+                //
+            }
 
-        if (c.moveToFirst()) {
-            titles.clear();
-            content.clear();
+            @Override
+            public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-            do {
+            }
+        };
 
-                titles.add(c.getString(titleIndex));
-                content.add(c.getString(contentIndex));
+        SQLiteDatabase sqLiteDatabase = sqLiteOpenHelper.getReadableDatabase();
 
-            } while (c.moveToNext());
+        String query = "SELECT * FROM clients ORDER BY company_name ASC"; // No trailing ';'
 
-            //arrayAdapter.notifyDataSetChanged();
-        }
+        Cursor cursor = sqLiteDatabase.rawQuery(query, null);
+
+        ClientCursorAdapter adapter = new ClientCursorAdapter(
+                this, R.layout.clients_listview_row, cursor, 0 );
+
+        this.setListAdapter(adapter);
     }
 
     public class DownloadTask extends AsyncTask<String,Void, String> {
