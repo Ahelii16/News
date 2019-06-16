@@ -35,7 +35,8 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity {
 
     ArrayList<String> titles = new ArrayList<>();
-    ArrayList<String> content = new ArrayList<>();
+    ArrayList<String> url = new ArrayList<>();
+    ArrayList<String> publish = new ArrayList<>();
 
     ArrayAdapter arrayAdapter;
 
@@ -51,9 +52,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        articleDB = this.openOrCreateDatabase("Articles", MODE_PRIVATE, null);
-        articleDB.execSQL("CREATE TABLE IF NOT EXISTS articles(publishedAt VARCHAR PRIMARY KEY,  title VARCHAR, content VARCHAR)");
-        updateListView();
+        articleDB = this.openOrCreateDatabase("articleDB", MODE_PRIVATE, null);
+        articleDB.execSQL("CREATE TABLE IF NOT EXISTS articles(publishedAt VARCHAR PRIMARY KEY,  title VARCHAR, url VARCHAR)");
 
         try {
             DownloadTask task = new DownloadTask();
@@ -67,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
         ListView listview = findViewById(R.id.listview);
 
         arrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, titles);//simple list item1: simple string with label.
-        //set array adapter to list view
         listview.setAdapter(arrayAdapter);
 
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -77,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
 //                startActivity(browserIntent);
 
                 Intent intent  = new Intent(getApplicationContext(), ArticleActivity.class);
-                intent.putExtra("content", content.get(i));
+                intent.putExtra("content", url.get(i));
                 startActivity(intent);
             }
         });
@@ -85,24 +84,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void updateListView() {
-//        c = articleDB.rawQuery("SELECT * FROM articles", null);
-//
-//        int contentIndex = c.getColumnIndex("content");
-//        int titleIndex = c.getColumnIndex("title");
-//
-//        if (c.moveToFirst()) {
-//            titles.clear();
-//            content.clear();
-//
-//            do {
-//
-//                titles.add(c.getString(titleIndex));
-//                content.add(c.getString(contentIndex));
-//
-//            } while (c.moveToNext());
-//
-//            //arrayAdapter.notifyDataSetChanged();
-//        }
+        c = articleDB.rawQuery("SELECT * FROM articles", null);
+
+        int urlIndex = c.getColumnIndex("url");
+        int titleIndex = c.getColumnIndex("title");
+        int publishIndex = c.getColumnIndex("publishedAt");
+
+        if (c.moveToFirst()) {
+            titles.clear();
+            url.clear();
+            publish.clear();
+
+            do {
+
+                titles.add(c.getString(titleIndex));
+                url.add(c.getString(urlIndex));
+                publish.add(c.getString(publishIndex));
+
+            } while (c.moveToNext());
+
+            arrayAdapter.notifyDataSetChanged();
+        }
     }
 
     public class DownloadTask extends AsyncTask<String,Void, String> {
@@ -137,32 +139,28 @@ public class MainActivity extends AppCompatActivity {
                 for (int i = 0; i < arr.length(); i++) {
 
                     JSONObject jsonPart = arr.getJSONObject(i);
-                    String title = "";
-                    String description = "";
-                    String published_at = jsonPart.getString("publishedAt");
-
-                    title = jsonPart.getString("title");
-                    description = jsonPart.getString("description");
-
+                    String title = jsonPart.getString("title");
+                    String publishedAt = jsonPart.getString("publishedAt");
                     String stringUrl = jsonPart.getString("url");
-                    url = new URL(stringUrl);
-                    urlConnection = (HttpURLConnection) url.openConnection();
-                    inputStream = urlConnection.getInputStream();
-                    reader = new InputStreamReader(inputStream);
-                    data = reader.read();
-                    String ArticleContent = "";
-                    while (data != -1) {
-                        char current = (char) data;
-                        ArticleContent += current;
-                        data = reader.read();
-                    }
-                    Log.i("HTML:", ArticleContent);
 
-                    String sql = "INSERT INTO articles(published_at, title, content) VALUES(?, ?, ?)";
+//                    url = new URL(stringUrl);
+//                    urlConnection = (HttpURLConnection) url.openConnection();
+//                    inputStream = urlConnection.getInputStream();
+//                    reader = new InputStreamReader(inputStream);
+//                    data = reader.read();
+//                    String ArticleContent = "";
+//                    while (data != -1) {
+//                        char current = (char) data;
+//                        ArticleContent += current;
+//                        data = reader.read();
+//                    }
+//                    Log.i("HTML:", ArticleContent);
+
+                    String sql = "INSERT INTO articles(publishedAt, title, url) VALUES(?, ?, ?)";
                     SQLiteStatement statement = articleDB.compileStatement(sql);
-                    statement.bindString(1, published_at);
+                    statement.bindString(1, publishedAt);
                     statement.bindString(2, title);
-                    statement.bindString(3, description);
+                    statement.bindString(3, stringUrl);
 
                     statement.execute();
                 }

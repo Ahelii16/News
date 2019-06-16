@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import java.net.URL;
+
 public class ArticleActivity extends AppCompatActivity {
 
     @Override
@@ -13,11 +15,16 @@ public class ArticleActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article);
 
+//        // otherwise it would've opened on the default browser app on the phone.
+//        webView.loadUrl("https://in.france.fr/en");
+//        //webView.loadData() for HTML data
+
         WebView webView = findViewById(R.id.webView);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient());
 
         Intent intent = getIntent();
-        webView.loadData(intent.getStringExtra("content"), "text/html", "UTF-8");
+        String url = intent.getStringExtra("content");
+        webView.loadUrl(url);
     }
 }
