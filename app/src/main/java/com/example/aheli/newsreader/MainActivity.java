@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         articleDB = this.openOrCreateDatabase("Articles", MODE_PRIVATE, null);
-        articleDB.execSQL("CREATE TABLE IF NOT EXISTS articles(publishedAt CHAR PRIMARY KEY,  title VARCHAR, content VARCHAR)");
+        articleDB.execSQL("CREATE TABLE IF NOT EXISTS articles(publishedAt VARCHAR PRIMARY KEY,  title VARCHAR, content VARCHAR)");
         updateListView();
 
         try {
@@ -103,29 +103,6 @@ public class MainActivity extends AppCompatActivity {
 //
 //            //arrayAdapter.notifyDataSetChanged();
 //        }
-
-        SQLiteOpenHelper sqLiteOpenHelper = new SQLiteOpenHelper() {
-            @Override
-            public void onCreate(SQLiteDatabase db) {
-                //
-            }
-
-            @Override
-            public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
-            }
-        };
-
-        SQLiteDatabase sqLiteDatabase = sqLiteOpenHelper.getReadableDatabase();
-
-        String query = "SELECT * FROM clients ORDER BY company_name ASC"; // No trailing ';'
-
-        Cursor cursor = sqLiteDatabase.rawQuery(query, null);
-
-        ClientCursorAdapter adapter = new ClientCursorAdapter(
-                this, R.layout.clients_listview_row, cursor, 0 );
-
-        this.setListAdapter(adapter);
     }
 
     public class DownloadTask extends AsyncTask<String,Void, String> {
