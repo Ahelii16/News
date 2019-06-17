@@ -1,5 +1,6 @@
 package com.example.aheli.newsreader;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -8,6 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.os.RecoverySystem;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,6 +18,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
     ListView listview;
     Cursor c;
+    ProgressDialog progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
         try {
             DownloadTask task = new DownloadTask();
             task.execute("https://newsapi.org/v2/top-headlines?country=in&apiKey=" + apiKey).get();
+            //progressBar = ProgressDialog.show(getApplicationContext(), "Showing ProgressDialog", "Loading...");
+            progressBar = ProgressDialog.show(getApplicationContext(), "", "Loading..");
 
         } catch (Exception e) {
             Toast.makeText(getApplicationContext(),"Couldn't find news",Toast.LENGTH_LONG).show();
@@ -96,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
             publish.clear();
 
             do {
-
                 titles.add(c.getString(titleIndex));
                 url.add(c.getString(urlIndex));
                 publish.add(c.getString(publishIndex));
@@ -143,19 +148,6 @@ public class MainActivity extends AppCompatActivity {
                     String publishedAt = jsonPart.getString("publishedAt");
                     String stringUrl = jsonPart.getString("url");
 
-//                    url = new URL(stringUrl);
-//                    urlConnection = (HttpURLConnection) url.openConnection();
-//                    inputStream = urlConnection.getInputStream();
-//                    reader = new InputStreamReader(inputStream);
-//                    data = reader.read();
-//                    String ArticleContent = "";
-//                    while (data != -1) {
-//                        char current = (char) data;
-//                        ArticleContent += current;
-//                        data = reader.read();
-//                    }
-//                    Log.i("HTML:", ArticleContent);
-
                     String sql = "INSERT INTO articles(publishedAt, title, url) VALUES(?, ?, ?)";
                     SQLiteStatement statement = articleDB.compileStatement(sql);
                     statement.bindString(1, publishedAt);
@@ -166,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Log.i("URL Content", result);
                 return result;
+
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (JSONException e) {
@@ -181,6 +174,7 @@ public class MainActivity extends AppCompatActivity {
 
             super.onPostExecute(s);
             updateListView();
+            //progressBar.dismiss();
         }
     }
 }
