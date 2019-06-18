@@ -49,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
 
     ListView listview;
     Cursor c;
-    ProgressDialog progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,8 +61,6 @@ public class MainActivity extends AppCompatActivity {
         try {
             DownloadTask task = new DownloadTask();
             task.execute("https://newsapi.org/v2/top-headlines?country=in&apiKey=" + apiKey).get();
-            //progressBar = ProgressDialog.show(getApplicationContext(), "Showing ProgressDialog", "Loading...");
-            progressBar = ProgressDialog.show(getApplicationContext(), "", "Loading..");
 
         } catch (Exception e) {
             Toast.makeText(getApplicationContext(),"Couldn't find news",Toast.LENGTH_LONG).show();
@@ -170,11 +167,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(String s) {  //called when do in background completed. passes whatever we return from doInBackground.
-
+        protected void onPostExecute(String s) {
             super.onPostExecute(s);
             updateListView();
-            //progressBar.dismiss();
         }
     }
 }
